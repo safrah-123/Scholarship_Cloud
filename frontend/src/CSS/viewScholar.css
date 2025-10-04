@@ -1,0 +1,153 @@
+.scholarship-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.scholarship-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.scholarship-card {
+  display: flex;
+  justify-content: space-between;
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.scholarship-left {
+  max-width: 70%;
+}
+
+.scholarship-name {
+  margin: 0;
+  font-size: 18px;
+}
+
+.eligibility {
+  font-size: 14px;
+  color: #555;
+}
+
+.scholarship-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.times-availed .count {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.details-btn {
+  margin-top: 20px;
+  padding: 8px 8px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.details-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Scholarship Details */
+.details-container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
+
+.details-container h2 {
+  margin-bottom: 15px;
+}
+
+.back-btn {
+  margin-top: 20px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #5a6268;
+}
+/* Background container for details page */
+.details-container {
+  max-width: 100%;
+  height: 100vh;
+  background: url('/bg.jpg') no-repeat center center/cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.details-box {
+  background: rgba(255, 255, 255, 0.95); 
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  text-align: left;
+}
+.details-box h2 {
+  margin-bottom: 15px;
+  font-size: 24px;
+  color: #222;
+}
+
+.details-box p {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+/* Buttons */
+.details-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.details-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.details-btn:hover {
+  background-color: #0056b3;
+}
+
+.back-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #5a6268;
+}

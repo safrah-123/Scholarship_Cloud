@@ -1,0 +1,133 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  height: 100vh;
+  display: flex;
+}
+
+/* Main container split into 2 halves */
+.signup-page {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* Left side (image or background) */
+.signup-left {
+  flex: 1;
+  background: url("/bg.jpg") no-repeat center center;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  padding: 20px;
+}
+
+/* Right side (form) */
+.signup-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+}
+
+.signup-container {
+  width: 100%;
+  max-width: 500px;  /* desktop friendly */
+  background: #fff;
+  padding: 40px 35px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.signup-form {
+  width:350px;
+  display: flex;
+  flex-direction: column;
+  padding:0px;
+}
+
+.signup-form h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+  font-size: 20px;
+}
+
+.input-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+.input-group input,
+.input-group select {
+  padding: 10px;;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #4facfe;
+  box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+}
+
+.signup-btn {
+  width: 100%;
+  padding: 14px;
+  background: #4facfe;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 12px;
+}
+
+.signup-btn:hover {
+  background: #00c6ff;
+}
+
+/* Responsive (mobile view → stack) */
+@media (max-width: 768px) {
+  .signup-page {
+    flex-direction: column;
+  }
+
+  .signup-left {
+    height: 200px;
+    font-size: 22px;
+  }
+
+  .signup-right {
+    flex: none;
+    height: auto;
+    padding: 20px;
+  }
+
+  .signup-container {
+    max-width: 100%;
+    padding: 60px;
+    box-shadow: none;
+  }
+}

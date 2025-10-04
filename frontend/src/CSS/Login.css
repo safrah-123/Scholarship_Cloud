@@ -1,0 +1,80 @@
+body {
+  font-family: Arial, sans-serif;
+  background-image: url('/bg.jpg'); /* ✅ Correct path since image is in public/ */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.input-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.input-group input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.input-group input:focus {
+  border-color: #4facfe;
+  box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: #4facfe;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  background: #00c6ff;
+}
+
+.signup-link span {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.signup-link span:hover {
+  text-decoration: underline;
+  color: #2f6eb2;
+}

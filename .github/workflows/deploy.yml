@@ -1,0 +1,52 @@
+name: CI/CD to Azure
+
+on:
+  push:
+    branches:
+      - main   # run pipeline when you push to main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout source code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Log in to Azure
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Log in to Azure Container Registry (ACR)
+      - name: Docker login to ACR
+        run: |
+          echo ${{ secrets.ACR_PASSWORD }} | docker login acesquad.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      # Build and push Frontend image
+      - name: Build and Push Frontend
+        run: |
+          docker build -t acesquad.azurecr.io/frontend-app:latest ./frontend
+          docker push acesquad.azurecr.io/frontend-app:latest
+
+      # Build and push Backend image
+      - name: Build and Push Backend
+        run: |
+          docker build -t acesquad.azurecr.io/project-backend:latest ./Backend
+          docker push acesquad.azurecr.io/project-backend:latest
+
+      # Deploy to Web App (Frontend)
+      - name: Deploy Frontend to Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: frontend-app
+          images: acesquad.azurecr.io/frontend-app:latest
+
+      # Deploy to Web App (Backend)
+      - name: Deploy Backend to Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: project-backend
+          images: acesquad.azurecr.io/project-backend:latest

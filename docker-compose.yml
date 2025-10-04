@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./Backend
+    ports:
+      - "3000:3000"
+    networks:
+      - mern-network
+    environment:
+      - MONGO_URL=mongodb://ace:qiyNkSX0WRkWigkXoQxJ7BJ0fzmGrQ402krHUsnqsqJiK4nfhe1BdRtLl3jfBfU2ILU0KEUWy6kdACDbIzjTCg%3D%3D@ace.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@ace@
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - mern-network
+    depends_on:
+      - backend
+
+networks:
+  mern-network:
+    driver: bridge
