@@ -3,50 +3,55 @@ name: CI/CD to Azure
 on:
   push:
     branches:
-      - main   # run pipeline when you push to main
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout source code
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Log in to Azure
+      # 2. Login to Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Log in to Azure Container Registry (ACR)
-      - name: Docker login to ACR
+      # 3. Login to Frontend ACR
+      - name: Docker login to Frontend ACR
         run: |
-          echo ${{ secrets.ACR_PASSWORD }} | docker login acesquad.azurecr.io -u ${{ secrets.ACR_USERNAME }} --password-stdin
+          echo ${{ secrets.FRONTEND_ACR_PASSWORD }} | docker login frontendregistry.azurecr.io -u ${{ secrets.FRONTEND_ACR_USERNAME }} --password-stdin
 
-      # Build and push Frontend image
+      # 4. Build and push Frontend Docker image
       - name: Build and Push Frontend
         run: |
-          docker build -t acesquad.azurecr.io/frontend-app:latest ./frontend
-          docker push acesquad.azurecr.io/frontend-app:latest
+          docker build -t frontendregistry.azurecr.io/frontend:latest ./frontend
+          docker push frontendregistry.azurecr.io/frontend:latest
 
-      # Build and push Backend image
+      # 5. Login to Backend ACR
+      - name: Docker login to Backend ACR
+        run: |
+          echo ${{ secrets.BACKEND_ACR_PASSWORD }} | docker login backendregistry.azurecr.io -u ${{ secrets.BACKEND_ACR_USERNAME }} --password-stdin
+
+      # 6. Build and push Backend Docker image
       - name: Build and Push Backend
         run: |
-          docker build -t acesquad.azurecr.io/project-backend:latest ./Backend
-          docker push acesquad.azurecr.io/project-backend:latest
+          docker build -t backendregistry.azurecr.io/backend:latest ./Backend
+          docker push backendregistry.azurecr.io/backend:latest
 
-      # Deploy to Web App (Frontend)
+      # 7. Deploy Frontend to Azure Web App
       - name: Deploy Frontend to Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: frontend-app
-          images: acesquad.azurecr.io/frontend-app:latest
+          app-name: frontend
+          images: frontendregistry.azurecr.io/frontend:latest
 
-      # Deploy to Web App (Backend)
-      - name: Deploy Backend to Web App
+      # 8. Deploy Backend to Azure Web App
+      - name: Deploy Backend to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: project-backend
-          images: acesquad.azurecr.io/project-backend:latest
+          app-name: backend
+          images: backendregistry.azurecr.io/backend:latest
