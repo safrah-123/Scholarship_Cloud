@@ -46,7 +46,7 @@ jobs:
       - name: Deploy Frontend to Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: newscholarui
+          app-name: newscholarui1
           images: frontendso.azurecr.io/frontend:latest
 
       # 8. Deploy Backend to Azure Web App
