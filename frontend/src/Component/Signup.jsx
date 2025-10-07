@@ -20,7 +20,7 @@ function SignUp() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     try{
-        let res=await axios.post("https://azhyr-gpa3bwexfhcrdqbb.southeastasia-01.azurewebsites.net/user/signup",{
+        let res=await axios.post("http://localhost:3000/user/signup",{
             firstName,lastName,gender,age,email,phone,password,confirmPassword
         })
         if(res.status==200){

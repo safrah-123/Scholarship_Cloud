@@ -1,20 +1,19 @@
-# Use Node.js base image
+# Use official Node.js image
 FROM node:18
 
-# Set working directory inside the container
+# Create app directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first
+# Copy package.json first (for caching)
 COPY package*.json ./
 
-# Install all dependencies (including nodemon for dev)
-RUN npm install
+# Install dependencies
+RUN npm install --omit=dev
 
-# Copy everything else
+# Copy rest of the app
 COPY . .
 
-# Expose the port (will match .env at runtime, e.g., 5000)
-EXPOSE ${PORT}
-
-# Run in dev mode with nodemon
-CMD ["npm", "run", "dev"]
+# Expose the port Azure will bind to
+EXPOSE 3000
+# Start the app
+CMD ["npm", "start"]

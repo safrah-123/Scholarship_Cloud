@@ -3,6 +3,7 @@ import Signup from "../Component/Signup";
 import Dashboard from "../Component/Dashboard";
 import AddScholar from "../Component/AddScholar";
 import ViewScholar from "../Component/ViewScholar";
+import Apply from "../Component/Apply";
 let router=[
     {
         path:'/',
@@ -19,6 +20,10 @@ let router=[
      {
         path:'/Addscholar',
         element:<><AddScholar/></>
+    },
+     {
+        path:'/Apply',
+        element:<><Apply/></>
     },
     {
         path:'/viewscholar/:str',

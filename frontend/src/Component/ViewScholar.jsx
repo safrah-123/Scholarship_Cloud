@@ -13,7 +13,7 @@ const ViewScholar = () => {
   const get_scholar1 = async () => {
     const params = { scholarshipName: str };
     try {
-      let res = await axios.get("https://azhyr-gpa3bwexfhcrdqbb.southeastasia-01.azurewebsites.net/scholar/get_details", { params });
+      let res = await axios.get("http://localhost:3000/scholar/get_details", { params });
       if (res.status === 200) {
         console.log(res.data.data);
         setScholar(res.data.data);
@@ -58,7 +58,7 @@ const ViewScholar = () => {
           </p>
           {
             name!="admin"?(<div className="details-buttons">
-            <button className="details-btn" onClick={() => alert("Apply Now Clicked!")}>
+            <button className="details-btn" onClick={() => navigate("/Apply")}>
               Apply Now
             </button>
             <button className="back-btn" onClick={() => navigate("/Dashboard")}>
