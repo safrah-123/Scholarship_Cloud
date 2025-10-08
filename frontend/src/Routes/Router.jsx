@@ -4,6 +4,7 @@ import Dashboard from "../Component/Dashboard";
 import AddScholar from "../Component/AddScholar";
 import ViewScholar from "../Component/ViewScholar";
 import Apply from "../Component/Apply";
+import Applied from "../Component/Applied";
 let router=[
     {
         path:'/',
@@ -22,12 +23,16 @@ let router=[
         element:<><AddScholar/></>
     },
      {
-        path:'/Apply',
+        path:'/Apply/:scholar',
         element:<><Apply/></>
     },
     {
         path:'/viewscholar/:str',
         element:<><ViewScholar/></>
+    },
+    {
+        path:'/Applied',
+        element:<><Applied/></>
     }
 ]
 export default router;

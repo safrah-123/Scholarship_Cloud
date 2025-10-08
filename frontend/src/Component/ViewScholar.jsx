@@ -9,8 +9,31 @@ const ViewScholar = () => {
   const navigate = useNavigate();
   const { str } = useParams(); 
   const name=sessionStorage.getItem('name');
+  const [but,setBut]=useState(true);
 
-  const get_scholar1 = async () => {
+  const get_scholar2 = async () => {
+     try{
+      let res=await axios.get("http://localhost:3000/scholar/check_scholar",{params:{name:name,scholarName:str}});
+      if(res.status==200){
+        if(res.data.message=="0"){
+          setBut(false);
+        }
+        else{
+          setBut(true);
+        }
+
+     }
+    }
+     catch(err){
+        toast.error("Try again Later");
+     }
+
+  }
+
+
+
+       
+    const get_scholar1 = async () => {
     const params = { scholarshipName: str };
     try {
       let res = await axios.get("http://localhost:3000/scholar/get_details", { params });
@@ -26,7 +49,9 @@ const ViewScholar = () => {
   useEffect(() => {
     get_scholar1();
   }, []);
-
+  useEffect(() => {
+    get_scholar2();
+  }, []);
   return (
     <div className="details-container">
       {scholar.map((item, id) => (
@@ -58,9 +83,11 @@ const ViewScholar = () => {
           </p>
           {
             name!="admin"?(<div className="details-buttons">
-            <button className="details-btn" onClick={() => navigate("/Apply")}>
+              {
+                but==true?( <button className="details-btn" onClick={() => navigate(`/Apply/${item.scholarshipName}`)}>
               Apply Now
-            </button>
+            </button>):(null)
+              }
             <button className="back-btn" onClick={() => navigate("/Dashboard")}>
               Back to List
             </button>

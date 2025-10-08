@@ -47,7 +47,7 @@ select {
   margin-top: 5px;
 }
 
-.apply1 {
+.apply1,.apply2 {
   background-color: #1e3a8a;
   color: white;
   padding: 10px;
@@ -67,3 +67,8 @@ select {
   text-align: center;
   margin-top: 15px;
 }
+.btn-grp{
+  display: flex;
+  justify-content: space-between;
+  align-items:center;
+};

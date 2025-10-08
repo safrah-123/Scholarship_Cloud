@@ -15,7 +15,7 @@ function Dashboard() {
     try {
       let res = await axios.get("http://localhost:3000/scholar/get_scholar");
       if (res.status === 200) {
-        setScholar(res.data.payload);
+        setScholar(res.data.data);
       }
     } catch (err) {
       toast.error("Try again later");
@@ -48,9 +48,10 @@ function Dashboard() {
           {
             name=="admin"?(<button className="Add" onClick={() => navigate("/Addscholar")}>
             ADD
-          </button>):null
-}
-          <button className={name=="admin"?"applied":"Add"}>Applied</button>
+          </button>):null}
+          <button className={name=="admin"?"applied":"Add"} onClick={(()=>{
+            navigate('/Applied');
+          })}>Applied</button>
           <button className="logout" onClick={()=>{
             logout();
           }}>Logout</button>
