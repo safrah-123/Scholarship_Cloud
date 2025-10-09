@@ -15,3 +15,7 @@ override.tf.json
 # Node / Frontend
 node_modules/
 .env
+
+# OS / Editor
+.DS_Store
+.vscode/
