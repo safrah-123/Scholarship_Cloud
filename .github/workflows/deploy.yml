@@ -53,5 +53,5 @@ jobs:
       - name: Deploy Backend to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: azhyr
+          app-name: azhyr1
           images: schoace1.azurecr.io/backend:latest
