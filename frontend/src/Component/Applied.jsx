@@ -22,10 +22,6 @@ function Applied() {
       toast.error("Try again Later");
   }
 }
-
-
-
-
   const get_data = async () => {
     try {
       let params = { name: name };
@@ -39,16 +35,22 @@ function Applied() {
       toast.error(err.message);
     }
   };
-  const delete1 = async (result, scholarName) => {
+  const delete1 = async (result,email,scholarName,) => {
     if (result) {
       try {
-        let params = { name: name, scholarName: scholarName };
+        let params = { email:email, scholarName: scholarName };
         let res = await axios.delete("http://localhost:3000/scholar/delete_application", { params });
         if (res.status === 200) {
           toast.success("Application deleted successfully");
-          get_data(); 
+          if(name==="admin"){
+            get_data1();
         }
-      } catch (err) {
+        else{
+          get_data();
+        }
+      }
+    }
+       catch (err) {
         toast.error("Error deleting application");
       }
     }
@@ -79,13 +81,16 @@ function Applied() {
                 <h2><b>Scholarship name:</b> {item.scholarName}</h2>
                 <p><strong>Applicant name:</strong> {item.name}</p>
                 <p><strong>Applied Date:</strong> {item.appliedAt}</p>
-                <p><strong>Application Status:</strong> Pending</p>
+                <p><strong>Application Status:</strong> {item.status}</p>
+                {
+                  name==="admin"?(<p><strong>Result:</strong> {item.result}</p>):(null)
+                }
                 <div className="card-btn1">
                   <button
                     className="accept-view-details"
                     onClick={() => {
                       const res = window.confirm("Do you want to reject your form?");
-                      delete1(res, item.scholarName);
+                      delete1(res, item.email,item.scholarName);
                     }}
                   >
                    Accept
@@ -94,7 +99,7 @@ function Applied() {
                     className="reject-view-details"
                     onClick={() => {
                       const res = window.confirm("Do you want to reject your form?");
-                      delete1(res, item.scholarName);
+                      delete1(res, item.email,item.scholarName);
                     }}
                   >
                    Reject 
@@ -129,7 +134,7 @@ function Applied() {
                     className="delete-view-details"
                     onClick={() => {
                       const res = window.confirm("Do you want to reject your form?");
-                      delete1(res, item.scholarName);
+                      delete1(res, item.email,item.scholarName);
                     }}
                   >
                     Delete
