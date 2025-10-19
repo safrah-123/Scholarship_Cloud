@@ -1,5 +1,21 @@
-# Ignore all env files
-*.env
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
 
-# Or specifically ignore only the Backend one
-Backend/.env
+# Node / Frontend
+node_modules/
+.env
+
+# OS / Editor
+.DS_Store
+.vscode/
