@@ -20,33 +20,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript' ]
+        language: [ 'javascript' ]   # JS/TS (covers MERN)
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Install Backend Dependencies
-      working-directory: Backend
-      run: npm ci
+      # Install deps so CodeQL can better resolve imports (frontend + backend)
+      - name: Install Backend Dependencies
+        working-directory: Backend
+        run: npm ci
 
-    - name: Install Frontend Dependencies
-      working-directory: frontend
-      run: npm ci
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        queries: security-and-quality
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality       # broader ruleset
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
   zap-scan:
     name: Dynamic Web Security Scan (OWASP ZAP)
@@ -54,17 +55,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Run OWASP ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.9.0
-      with:
-        target: 'https://frontend-app-fvf6gbfrcsftf7bn.southeastasia-01.azurewebsites.net/'   # 🔁 Replace with your deployed app URL (e.g., Azure/Vercel)
-        cmd_options: '-r zap_report.html'
+      # Make workspace writable by ZAP container user (uid 1000)
+      - name: Fix workspace ownership for ZAP
+        run: |
+          sudo chown -R 1000:1000 "$GITHUB_WORKSPACE"
+          sudo chmod -R u+rwX "$GITHUB_WORKSPACE"
 
-    - name: Upload ZAP Report Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: zap-report
-        path: zap_report.html
+      # Warm-up to avoid cold start timeouts on Azure App Service
+      - name: Warm up target
+        env:
+          TARGET_URL: https://frontend-app-fvf6gbfrcsftf7bn.southeastasia-01.azurewebsites.net/ # <-- CHANGE if needed
+        run: |
+          for i in {1..10}; do
+            if curl -sSfL --max-time 15 "$TARGET_URL" > /dev/null; then
+              echo "Target is reachable"; exit 0
+            fi
+            echo "Retry $i..."; sleep 6
+          done
+          echo "Target not reachable"; exit 1
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: 'https://frontend-app-fvf6gbfrcsftf7bn.southeastasia-01.azurewebsites.net/'  # <-- CHANGE if needed
+          cmd_options: |
+            -J report_json.json
+            -w report_md.md
+            -r report_html.html
+            -m 5                      # spider minutes (adjust if your app is bigger)
+          fail_action: false           # don't fail the workflow just because findings exist
+
+      - name: Upload ZAP Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: |
+            report_html.html
+            report_md.md
+            report_json.json
