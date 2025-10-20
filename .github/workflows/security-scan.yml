@@ -1,4 +1,4 @@
-name: ScholarshipCloud Security Scan (CodeQL + ZAP)
+name: ScholarshipCloud Security Scan (CodeQL + ZAP Local)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '0 2 * * 1'  # every Monday 2AM UTC
+    - cron: '0 2 * * 1'  # every Monday at 2AM UTC
 
 jobs:
   codeql-scan:
@@ -16,12 +16,10 @@ jobs:
       actions: read
       contents: read
       security-events: write
-
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript' ]   # JS/TS (covers MERN)
-
+        language: [ 'javascript' ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -31,7 +29,6 @@ jobs:
         with:
           node-version: '20'
 
-      # Install deps so CodeQL can better resolve imports (frontend + backend)
       - name: Install Backend Dependencies
         working-directory: Backend
         run: npm ci
@@ -44,13 +41,14 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
-          queries: security-and-quality       # broader ruleset
+          queries: security-and-quality
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
+
   zap-scan:
-    name: Dynamic Web Security Scan (OWASP ZAP)
+    name: Dynamic Web Security Scan (OWASP ZAP - Local Frontend)
     needs: codeql-scan
     runs-on: ubuntu-latest
 
@@ -58,36 +56,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Make workspace writable by ZAP container user (uid 1000)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ✅ Build and start the React app on port 5173
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Start frontend app
+        working-directory: frontend
+        run: |
+          npx vite --port 5173 &      # Vite dev server
+          echo "Waiting for frontend to start..."
+          for i in {1..25}; do
+            if curl -sSf http://localhost:5173 > /dev/null; then
+              echo "Frontend started on port 5173"
+              break
+            fi
+            echo "Retry $i... waiting 5s"
+            sleep 5
+          done
+
+      # ✅ Fix permissions so ZAP can write reports
       - name: Fix workspace ownership for ZAP
         run: |
           sudo chown -R 1000:1000 "$GITHUB_WORKSPACE"
           sudo chmod -R u+rwX "$GITHUB_WORKSPACE"
 
-      # Warm-up to avoid cold start timeouts on Azure App Service
-      - name: Warm up target
-        env:
-          TARGET_URL: https://frontend-app-fvf6gbfrcsftf7bn.southeastasia-01.azurewebsites.net/ # <-- CHANGE if needed
-        run: |
-          for i in {1..10}; do
-            if curl -sSfL --max-time 15 "$TARGET_URL" > /dev/null; then
-              echo "Target is reachable"; exit 0
-            fi
-            echo "Retry $i..."; sleep 6
-          done
-          echo "Target not reachable"; exit 1
-
+      # ✅ Run ZAP baseline scan on localhost
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.14.0
         with:
-          target: 'https://frontend-app-fvf6gbfrcsftf7bn.southeastasia-01.azurewebsites.net/'  # <-- CHANGE if needed
+          target: 'http://localhost:5173'
           cmd_options: |
             -J report_json.json
             -w report_md.md
             -r report_html.html
-            -m 5                      # spider minutes (adjust if your app is bigger)
-          fail_action: false           # don't fail the workflow just because findings exist
+            -m 5
+          fail_action: false
 
+      # ✅ Upload reports as artifacts
       - name: Upload ZAP Report Artifact
         uses: actions/upload-artifact@v4
         with:
