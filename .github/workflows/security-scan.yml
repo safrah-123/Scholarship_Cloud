@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '0 2 * * 1'  # every Monday at 2AM UTC
+    - cron: '0 2 * * 1'   # every Monday at 2 AM UTC
 
 jobs:
   codeql-scan:
@@ -16,10 +16,12 @@ jobs:
       actions: read
       contents: read
       security-events: write
+
     strategy:
       fail-fast: false
       matrix:
         language: [ 'javascript' ]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,7 +50,7 @@ jobs:
 
 
   zap-scan:
-    name: Dynamic Web Security Scan (OWASP ZAP - Local Frontend)
+    name: Dynamic Web Security Scan (OWASP ZAP – Local Frontend)
     needs: codeql-scan
     runs-on: ubuntu-latest
 
@@ -61,49 +63,45 @@ jobs:
         with:
           node-version: '20'
 
-      # ✅ Build and start the React app on port 5173
+      # 🧱 Start your Vite frontend on port 5173
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
-      - name: Start frontend app
+      - name: Start Vite dev server
         working-directory: frontend
         run: |
-          npx vite --port 5173 &      # Vite dev server
-          echo "Waiting for frontend to start..."
+          npx vite --port 5173 &                     # run in background
+          echo "Waiting for Vite to start on :5173..."
           for i in {1..25}; do
             if curl -sSf http://localhost:5173 > /dev/null; then
-              echo "Frontend started on port 5173"
+              echo "Vite app is up."
               break
             fi
-            echo "Retry $i... waiting 5s"
-            sleep 5
+            echo "Retry $i..."; sleep 5
           done
 
-      # ✅ Fix permissions so ZAP can write reports
-      - name: Fix workspace ownership for ZAP
+      # 🗂️ Prepare writable folder for ZAP output
+      - name: Prepare ZAP workspace
         run: |
-          sudo chown -R 1000:1000 "$GITHUB_WORKSPACE"
-          sudo chmod -R u+rwX "$GITHUB_WORKSPACE"
+          mkdir -p zap_output
+          chmod 777 zap_output
 
-      # ✅ Run ZAP baseline scan on localhost
+      # 🔍 Run OWASP ZAP baseline scan on localhost:5173
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.14.0
         with:
           target: 'http://localhost:5173'
-          cmd_options: |
-            -J report_json.json
-            -w report_md.md
-            -r report_html.html
+          cmd_options: >
+            -J zap_output/report_json.json
+            -w zap_output/report_md.md
+            -r zap_output/report_html.html
             -m 5
           fail_action: false
 
-      # ✅ Upload reports as artifacts
+      # 📦 Upload ZAP reports as workflow artifacts
       - name: Upload ZAP Report Artifact
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: |
-            report_html.html
-            report_md.md
-            report_json.json
+          path: zap_output/
