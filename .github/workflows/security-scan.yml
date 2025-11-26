@@ -1,0 +1,107 @@
+name: ScholarshipCloud Security Scan (CodeQL + ZAP Local)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 2 * * 1'   # every Monday at 2 AM UTC
+
+jobs:
+  codeql-scan:
+    name: Static Code Analysis (CodeQL)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Backend Dependencies
+        working-directory: Backend
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+
+  zap-scan:
+    name: Dynamic Web Security Scan (OWASP ZAP – Local Frontend)
+    needs: codeql-scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 🧱 Start your Vite frontend on port 5173
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Start Vite dev server
+        working-directory: frontend
+        run: |
+          npx vite --port 5173 &                     # run in background
+          echo "Waiting for Vite to start on :5173..."
+          for i in {1..25}; do
+            if curl -sSf http://localhost:5173 > /dev/null; then
+              echo "Vite app is up."
+              break
+            fi
+            echo "Retry $i..."; sleep 5
+          done
+
+      # 🗂️ Prepare writable folder for ZAP output
+      - name: Prepare ZAP workspace
+        run: |
+          mkdir -p zap_output
+          chmod 777 zap_output
+
+      # 🔍 Run OWASP ZAP baseline scan on localhost:5173
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: 'http://localhost:5173'
+          cmd_options: >
+            -J zap_output/report_json.json
+            -w zap_output/report_md.md
+            -r zap_output/report_html.html
+            -m 5
+          fail_action: false
+
+      # 📦 Upload ZAP reports as workflow artifacts
+      - name: Upload ZAP Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap_output/
