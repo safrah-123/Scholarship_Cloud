@@ -4,13 +4,32 @@ import useLogout from '../Hooks/useLogout';
 import "../CSS/Applied.css";
 import axios from 'axios';
 import toast from 'react-hot-toast';
-
 function Applied() {
   const navigate = useNavigate();
   const logout = useLogout();
   const name = sessionStorage.getItem("name");
+  console.log(name);
   const [data, setData] = useState([]);
   const [data1, setData1] = useState([]);
+  const accept=async(result,email,scholarName)=>{
+    if(result){
+      try{
+        let res=await axios.post("http://localhost:3000/scholar/accept_application",{email,name,scholarName});
+        if(res.status==200){
+          toast.success("Application accepted successfully");
+          if(name==="admin"){
+            get_data1();
+        }
+        else{
+          get_data();
+        }
+      }
+    }
+    catch(err){
+        toast.error("Try again Later");
+    }
+  }
+}
  const get_data1 = async () => {
   try{
     let res=await axios.get("http://localhost:3000/scholar/get_application1");
@@ -35,10 +54,10 @@ function Applied() {
       toast.error(err.message);
     }
   };
-  const delete1 = async (result,email,scholarName,) => {
+  const delete1 = async (result,email,scholarName) => {
     if (result) {
       try {
-        let params = { email:email, scholarName: scholarName };
+        let params = { email:email,name:name,scholarName: scholarName };
         let res = await axios.delete("http://localhost:3000/scholar/delete_application", { params });
         if (res.status === 200) {
           toast.success("Application deleted successfully");
@@ -86,19 +105,22 @@ function Applied() {
                   name==="admin"?(<p><strong>Result:</strong> {item.result}</p>):(null)
                 }
                 <div className="card-btn1">
-                  <button
+                  {
+                  item.status==="accepted"?(null):( <button
                     className="accept-view-details"
                     onClick={() => {
-                      const res = window.confirm("Do you want to reject your form?");
-                      delete1(res, item.email,item.scholarName);
+                      const res = window.confirm("Do you want to accept this form?");
+                      accept(res, item.email,item.scholarName);
                     }}
                   >
                    Accept
-                  </button>
+                  </button>)
+                  }
+                 
                   <button
                     className="reject-view-details"
                     onClick={() => {
-                      const res = window.confirm("Do you want to reject your form?");
+                      const res = window.confirm("Do you want to reject this form?");
                       delete1(res, item.email,item.scholarName);
                     }}
                   >
@@ -128,7 +150,7 @@ function Applied() {
                 <h2><b>Scholarship name:</b> {item.scholarName}</h2>
                 <p><strong>Applicant name:</strong> {item.name}</p>
                 <p><strong>Applied Date:</strong> {item.appliedAt}</p>
-                <p><strong>Application Status:</strong> Pending</p>
+                <p><strong>Application Status:</strong> {item.status}</p>
                 <div className="card-btn1">
                   <button
                     className="delete-view-details"

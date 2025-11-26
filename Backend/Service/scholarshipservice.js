@@ -314,9 +314,66 @@ const delete_application = async (req, res) => {
   try {
     await client.connect();
     let db = client.db(dbname);
-    let { email, scholarName } = req.query;
+    let { email, name, scholarName } = req.query;
 
     console.log("Deleting application for:", email, "Scholarship:", scholarName);
+    const data = await db
+      .collection("scholarApplications")
+      .findOne({ email, scholarName });
+    if (!data) {
+      return res.status(400).send({ message: "No data found" });
+    }
+    await db.collection("scholarApplications").deleteOne({ email, scholarName });
+    if (name === "admin") {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.GMAIL_USER || "azsafrah@gmail.com",
+            pass: process.env.GMAIL_PASS || "ugde rvgk yxwa ywbp",
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+
+        const mailOptions = {
+          from: `"Scholarship Portal" <${process.env.GMAIL_USER || "azsafrah@gmail.com"}>`,
+          to: email,
+          subject: "Scholarship Application Status",
+          text:
+            "Dear Applicant,\n\n" +
+            "We regret to inform you that your scholarship application has been rejected. " +
+            "For more details, please contact our support team.\n\n" +
+            "Regards,\nScholarship Department",
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`Rejection email sent successfully to ${email}`);
+      } catch (mailErr) {
+        console.error("Error sending mail:", mailErr.message);
+      }
+    }
+    res.status(200).send({
+      message: "Application deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error:", err.message);
+    res.status(500).send({
+      message: "Something went wrong",
+      err: err.message,
+    });
+  }
+};
+const accept_application = async (req, res) => {
+  try {
+    await client.connect();
+    let db = client.db(dbname);
+    let { email, name, scholarName } = req.body;
+
+    console.log("Updating application status for:", email, "Scholarship:", scholarName);
 
     const data = await db
       .collection("scholarApplications")
@@ -325,43 +382,50 @@ const delete_application = async (req, res) => {
     if (!data) {
       return res.status(400).send({ message: "No data found" });
     }
+    await db.collection("scholarApplications").updateOne(
+      { email, scholarName },
+      { $set: { status: "accepted" } }
+    );
 
-    await db.collection("scholarApplications").deleteOne({ email, scholarName });
-    try {
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true, 
-        auth: {
-          user: process.env.GMAIL_USER || "azsafrah@gmail.com",
-          pass: process.env.GMAIL_PASS || "ugde rvgk yxwa ywbp", 
-        },
-        tls: {
-          rejectUnauthorized: false,
-        },
-      });
+    console.log(`Status updated to 'accepted' for ${email}`);
 
-      const mailOptions = {
-        from: `"Scholarship Portal" <${process.env.GMAIL_USER || "azsafrah@gmail.com"}>`,
-        to: email,
-        subject: "Scholarship Application Status",
-        text:
-          "Dear Applicant,\n\n" +
-          "We regret to inform you that your scholarship application has been rejected. " +
-          "For more details, please contact our support team.\n\n" +
-          "Regards,\nScholarship Department",
-      };
+    if (name === "admin") {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.GMAIL_USER || "azsafrah@gmail.com",
+            pass: process.env.GMAIL_PASS || "ugde rvgk yxwa ywbp",
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
 
-      await transporter.sendMail(mailOptions);
-      console.log(` Rejection email sent successfully to ${email}`);
-    } catch (mailErr) {
-      console.error(" Error sending mail:", mailErr.message);
+        const mailOptions = {
+          from: `"Scholarship Portal" <${process.env.GMAIL_USER || "azsafrah@gmail.com"}>`,
+          to: email,
+          subject: "Scholarship Application Status",
+          text:
+            "Dear Applicant,\n\n" +
+            "Congratulations! Your scholarship application has been accepted. " +
+            "Please check your dashboard for more details.\n\n" +
+            "Regards,\nScholarship Department",
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`Acceptance email sent successfully to ${email}`);
+      } catch (mailErr) {
+        console.error("Error sending mail:", mailErr.message);
+      }
     }
-
     res.status(200).send({
-      message: "Scholarship deleted successfully and applicant notified.",
+      message: "Application status updated to accepted successfully",
     });
   } catch (err) {
+    console.error("Error:", err.message);
     res.status(500).send({
       message: "Something went wrong",
       err: err.message,
@@ -423,6 +487,7 @@ export default {
   submit_application,
   get_application,
   delete_application,
+  accept_application,
   check_scholar,
   get_application1
 };
